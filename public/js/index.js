@@ -31,15 +31,16 @@ socket.on('newMessage', function (message) {
     $('#messages').append(li);
   })
 
+var messageBox = $('[name=message]');
 
 $('#message-form').on('submit', function(e){
     e.preventDefault();
 
     socket.emit('createMessage', {
       from: 'user',
-      text: $('[name=message]').val()
+      text: messageBox.val()
     }, function(){
-
+        messageBox.val('');
     })
 })
 
@@ -50,26 +51,16 @@ locationButton.on('click', function() {
     return alert('incompatible browser, upgrade!');
   }
 
-  navigator.geolocation.getCurrentPosition(function(position){
-      socket.emit('createLocationMessage', {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude
-      });
-  }, function(){
-    alert('unable to fetch location');
-  })
+  locationButton.attr('disabled', 'disabled').text('Sending location...');
 
-})
-
-
-
-// $('#message-form').on('submit', function (e) {
-//   e.preventDefault();
-//
-//   socket.emit('createMessage', {
-//     from: 'User',
-//     text: $('[name=message]').val()
-//   }, function () {
-//
-//   });
-// });
+  navigator.geolocation.getCurrentPosition(function (position) {
+    locationButton.removeAttr('disabled').text('Send location');
+    socket.emit('createLocationMessage', {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    });
+  }, function () {
+    locationButton.removeAttr('disabled').text('Send location');
+    alert('Unable to fetch location.');
+  });
+});
